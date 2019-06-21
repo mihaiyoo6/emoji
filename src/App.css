@@ -23,4 +23,5 @@ video {
 }
 .hidden {
   visibility: hidden;
+  display: none;
 }

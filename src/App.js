@@ -118,7 +118,6 @@ class App extends React.Component {
   render() {
     const { showSwitchCamera } = this.state;
     const { innerWidth, innerHeight } = window;
-    alert(isMobile());
     return (
       <div className="video-container">
         <video
