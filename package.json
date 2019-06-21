@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@tensorflow-models/posenet": "^2.0.1",
+    "@tensorflow/tfjs-converter": "^1.2.1",
+    "@tensorflow/tfjs-core": "^1.2.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1"
