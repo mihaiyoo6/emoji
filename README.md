@@ -33,7 +33,7 @@ or
 - resize (toolbar is not counted when using `100vh`)
 - mobile flip video
 
-## Bibiliography
+## Bibliography
 
 - [Real-time Human Pose Estimation in the Browser with TensorFlow.js](https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5)
 - [TensorFlow Demos](https://www.tensorflow.org/js/demos)
