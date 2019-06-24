@@ -1,11 +1,11 @@
-function isAndroid() {
-  return /Android/i.test(navigator.userAgent);
-}
+const isAndroid = () => /Android/i.test(navigator.userAgent);
 
-function isiOS() {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
+const isiOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-export function isMobile() {
-  return isAndroid() || isiOS();
-}
+export const isMobile = () => isAndroid() || isiOS();
+
+export const getDistance = (pointA, pointB) => {
+  const a = pointA.x - pointB.x;
+  const b = pointA.y - pointB.y;
+  return Math.sqrt(a * a + b * b);
+};

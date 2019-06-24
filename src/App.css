@@ -22,6 +22,5 @@ video {
   padding: 10px 20px;
 }
 .hidden {
-  visibility: hidden;
   display: none;
 }

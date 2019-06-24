@@ -2,7 +2,7 @@ import React from "react";
 import * as posenet from "@tensorflow-models/posenet";
 import "./App.css";
 import emojiImg from "./glasses.svg";
-import { isMobile } from "./utils";
+import { isMobile, getDistance } from "./utils";
 
 class App extends React.Component {
   state = {
@@ -15,14 +15,17 @@ class App extends React.Component {
   canvas = React.createRef();
   emoji = React.createRef();
 
-  componentDidMount() {
+  async componentDidMount() {
     this.checkDevice();
-    this.capture(this.loadModel);
+    await this.capture();
+    this.loadModel();
     this.resize();
   }
 
   loadModel = async () => {
-    const net = await posenet.load();
+    const net = await posenet.load({
+      multiplier: isMobile() ? 0.5 : 0.75
+    });
     this.setState({ net }, this.getPoses);
   };
   getPoses = async () => {
@@ -41,40 +44,48 @@ class App extends React.Component {
       devices.filter(({ kind }) => kind === "videoinput").length > 1;
     this.setState({ showSwitchCamera });
   };
-  capture = async callback => {
+  capture = async () => {
     const { innerWidth, innerHeight } = window;
+    const mobile = isMobile();
     const { facingMode, stream } = this.state;
     stream && stream.getTracks().forEach(t => t.stop());
     const videoStream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
         facingMode: facingMode ? "user" : "environment",
-        width: innerWidth,
-        height: innerHeight
+        width: mobile ? undefined : innerWidth,
+        height: mobile ? undefined : innerHeight
       }
     });
 
     this.video.srcObject = videoStream;
-    this.setState({ stream: videoStream }, callback);
+    this.setState({ stream: videoStream });
   };
   switch = () => {
     const { facingMode } = this.state;
-    this.setState({ facingMode: !facingMode }, () =>
-      this.capture(this.loadModel)
-    );
+    this.setState({ facingMode: !facingMode }, () => this.capture());
   };
   resize = () => {
-    window.addEventListener("resize", () => this.capture(this.loadModel));
+    window.addEventListener("resize", () => this.capture());
   };
   drawPoint = poses => {
     const ctx = this.canvas.getContext("2d");
+
+    if (!this.state.facingMode) {
+      console.log({
+        facingMode: this.state.facingMode,
+        width: this.canvas.width
+      });
+      ctx.translate(this.canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
     const points = {};
     poses
       .filter(({ part }) => ["leftEye", "rightEye"].includes(part))
       .forEach(({ part, position }) =>
         Object.assign(points, { [part]: position })
       );
-    const distance = this.getDistance(points.leftEye, points.rightEye);
+    const distance = getDistance(points.leftEye, points.rightEye);
     const angle = Math.atan2(
       points.leftEye.y - points.rightEye.y,
       points.rightEye.x - points.leftEye.x
@@ -109,11 +120,6 @@ class App extends React.Component {
         ctx.fillStyle = "black";
         ctx.fill();
       });
-  };
-  getDistance = (pointA, pointB) => {
-    const a = pointA.x - pointB.x;
-    const b = pointA.y - pointB.y;
-    return Math.sqrt(a * a + b * b);
   };
   render() {
     const { showSwitchCamera } = this.state;
