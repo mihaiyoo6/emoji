@@ -70,15 +70,6 @@ class App extends React.Component {
   };
   drawPoint = poses => {
     const ctx = this.canvas.getContext("2d");
-
-    if (!this.state.facingMode) {
-      console.log({
-        facingMode: this.state.facingMode,
-        width: this.canvas.width
-      });
-      ctx.translate(this.canvas.width, 0);
-      ctx.scale(-1, 1);
-    }
     const points = {};
     poses
       .filter(({ part }) => ["leftEye", "rightEye"].includes(part))
@@ -98,6 +89,7 @@ class App extends React.Component {
       (points.leftEye.y + points.rightEye.y) / 2
     ); // change origin
     ctx.rotate(-angle);
+    !this.state.facingMode && ctx.scale(1, -1); //flip the image
     ctx.drawImage(
       this.emoji,
       -distance * 1.2,
