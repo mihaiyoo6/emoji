@@ -16,9 +16,14 @@ class App extends React.Component {
   emoji = React.createRef();
 
   async componentDidMount() {
-    this.checkDevice();
-    await this.capture();
-    this.loadModel();
+    try {
+      await this.checkDevice();
+      await this.loadModel();
+      await this.capture();
+      await this.getPoses();
+    } catch (e) {
+      this.setState({ error: true, loading: false });
+    }
     this.resize();
   }
 
@@ -26,7 +31,7 @@ class App extends React.Component {
     const net = await posenet.load({
       multiplier: isMobile() ? 0.5 : 0.75
     });
-    this.setState({ net }, this.getPoses);
+    this.setState({ net, loading: false });
   };
   getPoses = async () => {
     const { net } = this.state;
@@ -34,7 +39,6 @@ class App extends React.Component {
       flipHorizontal: this.state.facingMode,
       decodingMethod: "single-person"
     });
-
     this.drawPoint(poses[0].keypoints);
     requestAnimationFrame(this.getPoses);
   };
@@ -42,9 +46,11 @@ class App extends React.Component {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const showSwitchCamera =
       devices.filter(({ kind }) => kind === "videoinput").length > 1;
+
     this.setState({ showSwitchCamera });
   };
   capture = async () => {
+    this.setState({ loading: true });
     const { innerWidth, innerHeight } = window;
     const mobile = isMobile();
     const { facingMode, stream } = this.state;
@@ -59,7 +65,7 @@ class App extends React.Component {
     });
 
     this.video.srcObject = videoStream;
-    this.setState({ stream: videoStream });
+    this.setState({ stream: videoStream, loading: false });
   };
   switch = () => {
     const { facingMode } = this.state;
@@ -81,7 +87,6 @@ class App extends React.Component {
       points.leftEye.y - points.rightEye.y,
       points.rightEye.x - points.leftEye.x
     );
-    // console.log({ points, angle, distance });
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.save(); // save current state
     ctx.translate(
@@ -114,10 +119,20 @@ class App extends React.Component {
       });
   };
   render() {
-    const { showSwitchCamera } = this.state;
+    const { showSwitchCamera, loading, error } = this.state;
     const { innerWidth, innerHeight } = window;
     return (
       <div className="video-container">
+        {loading && (
+          <div className="message-container">
+            <div className="loader">Loading...</div>
+          </div>
+        )}
+        {error && (
+          <div className="message-container">
+            <div className="error">OOPS! Call 911</div>
+          </div>
+        )}
         <video
           className={this.state.facingMode ? "selfie" : ""}
           ref={ref => {
